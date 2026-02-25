@@ -1,0 +1,58 @@
+# =========================
+# OS Files
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# Gradle
+# =========================
+.gradle/
+**/.gradle/
+build/
+**/build/
+
+# =========================
+# Local Config
+# =========================
+local.properties
+*.keystore
+*.jks
+keystore.properties
+
+# =========================
+# Android Studio / IntelliJ
+# =========================
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Optional (if you want to keep shared project settings, remove .idea/ above and use this instead)
+# .idea/caches
+# .idea/libraries
+# .idea/workspace.xml
+# .idea/navEditor.xml
+# .idea/assetWizardSettings.xml
+
+# =========================
+# NDK / C++
+# =========================
+.externalNativeBuild/
+.cxx/
+
+# =========================
+# Logs
+# =========================
+*.log
+
+# =========================
+# Kotlin
+# =========================
+*.kotlin_module
+
+# =========================
+# Generated Files
+# =========================
+captures/
+.navigation/
