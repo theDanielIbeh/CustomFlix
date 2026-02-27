@@ -17,17 +17,14 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableLongStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.retain.RetainedEffect
 import androidx.compose.runtime.retain.retain
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
@@ -37,7 +34,8 @@ import kotlinx.coroutines.delay
 @Composable
 fun MediaPickerScreen(
     modifier: Modifier = Modifier,
-    context: Context = LocalContext.current
+    context: Context = LocalContext.current,
+    viewModel: MediaPickerViewModel = viewModel()
 ) {
     val player = retain {
         ExoPlayer
@@ -54,36 +52,20 @@ fun MediaPickerScreen(
             player.play()
         }
     }
-    var isPlaying by retain {
-        mutableStateOf(false)
-    }
-    var isSeeking by retain {
-        mutableStateOf(false)
-    }
-    var currentPosition by retain {
-        mutableLongStateOf(0L)
-    }
-    var duration by retain {
-        mutableLongStateOf(0L)
-    }
-    var isBuffering by retain {
-        mutableStateOf(false)
-    }
-    var isPlayerUiVisible by retain {
-        mutableStateOf(false)
-    }
 
-    LaunchedEffect(isPlayerUiVisible, isSeeking, isPlaying) {
-        delay(5000)
-        if (!isSeeking) {
-            isPlayerUiVisible = false
+    val uiState = viewModel.uiState
+
+    LaunchedEffect(uiState.isPlayerUiVisible, uiState.isSeeking, uiState.isPlaying) {
+        if (uiState.isPlayerUiVisible && !uiState.isSeeking && uiState.isPlaying) {
+            delay(5000)
+            viewModel.onPlayerUiVisibilityChanged(false)
         }
     }
 
-    LaunchedEffect(player, isPlaying, isSeeking) {
-        while (isPlaying) {
-            if (!isSeeking) {
-                currentPosition = player.currentPosition.coerceAtLeast(0)
+    LaunchedEffect(player, uiState.isPlaying, uiState.isSeeking) {
+        while (uiState.isPlaying) {
+            if (!uiState.isSeeking) {
+                viewModel.onCurrentPositionChanged(player.currentPosition.coerceAtLeast(0))
             }
             delay(16L)
         }
@@ -93,14 +75,14 @@ fun MediaPickerScreen(
         val listener = object : Player.Listener {
             override fun onIsPlayingChanged(playing: Boolean) {
                 super.onIsPlayingChanged(playing)
-                isPlaying = playing
+                viewModel.onIsPlayingChanged(playing)
             }
 
             override fun onPlaybackStateChanged(playbackState: Int) {
                 super.onPlaybackStateChanged(playbackState)
-                isBuffering = playbackState == Player.STATE_BUFFERING
+                viewModel.onIsBufferingChanged(playbackState == Player.STATE_BUFFERING)
                 if (playbackState == Player.STATE_READY) {
-                    duration = player.duration
+                    viewModel.onDurationChanged(player.duration)
                 }
             }
         }
@@ -139,47 +121,47 @@ fun MediaPickerScreen(
                         interactionSource = null,
                         indication = null
                     ) {
-                        isPlayerUiVisible = !isPlayerUiVisible
+                        viewModel.onPlayerUiVisibilityChanged(!uiState.isPlayerUiVisible)
                     }
             )
             Column(
                 modifier = Modifier.align(Alignment.BottomCenter)
             ) {
                 AnimatedVisibility(
-                    visible = isPlayerUiVisible,
+                    visible = uiState.isPlayerUiVisible,
                     enter = fadeIn(),
                     exit = fadeOut()
                 ) {
                     PlayerUi(
-                        isPlaying = isPlaying,
+                        isPlaying = uiState.isPlaying,
                         isPlayPauseClicked = {
                             when {
-                                !isPlaying && player.playbackState == Player.STATE_ENDED -> {
+                                !uiState.isPlaying && player.playbackState == Player.STATE_ENDED -> {
                                     player.seekTo(0)
                                     player.play()
                                 }
 
-                                !isPlaying -> {
+                                !uiState.isPlaying -> {
                                     player.play()
                                 }
 
-                                isPlaying -> {
+                                uiState.isPlaying -> {
                                     player.pause()
                                 }
                             }
                         },
-                        isSeeking = isSeeking,
+                        isSeeking = uiState.isSeeking,
                         onSeekBarPositionChange = {
-                            isSeeking = true
-                            currentPosition = it
+                            viewModel.onIsSeekingChanged(true)
+                            viewModel.onCurrentPositionChanged(it)
                         },
                         onSeekBarPositionChangeFinished = {
                             player.seekTo(it)
-                            isSeeking = false
+                            viewModel.onIsSeekingChanged(false)
                         },
-                        currentPosition = currentPosition,
-                        duration = duration,
-                        isBuffering = isBuffering
+                        currentPosition = uiState.currentPosition,
+                        duration = uiState.duration,
+                        isBuffering = uiState.isBuffering
                     )
                 }
             }
