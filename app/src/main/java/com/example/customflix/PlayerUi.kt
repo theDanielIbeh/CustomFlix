@@ -93,15 +93,14 @@ fun PlayerUi(
             )
 
             Slider(
-                value = currentPosition.toFloat(),
+                value = currentPosition.toFloat().coerceIn(0f, duration.coerceAtLeast(1).toFloat()),
                 onValueChange = { newPosition ->
                     onSeekBarPositionChange(newPosition.toLong())
                 },
                 onValueChangeFinished = {
                     onSeekBarPositionChangeFinished(currentPosition)
                 },
-                valueRange = 0f..duration.toFloat(),
-                enabled = !isSeeking,
+                valueRange = 0f..duration.coerceAtLeast(1).toFloat(),
                 thumb = {
                     Box(
                         modifier = Modifier
@@ -120,7 +119,11 @@ fun PlayerUi(
                     ) {
                         Box(
                             modifier = Modifier
-                                .fillMaxWidth(sliderState.value / duration.toFloat())
+                                .fillMaxWidth(
+                                    if (duration > 0) {
+                                        (sliderState.value / duration.toFloat()).coerceIn(0f, 1f)
+                                    } else 0f
+                                )
                                 .height(4.dp)
                                 .background(MaterialTheme.colorScheme.primary)
                         )
