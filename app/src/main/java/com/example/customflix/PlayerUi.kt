@@ -27,8 +27,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -59,23 +61,72 @@ fun PlayerUi(
                 modifier = Modifier.size(24.dp)
             )
         } else {
-            IconButton(
-                onClick = {
-                    isPlayPauseClicked(!isPlaying)
-                },
-                shape = CircleShape,
-                modifier = Modifier.size(60.dp)
+            Row(
+                horizontalArrangement = Arrangement.SpaceAround,
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Icon(
-                    imageVector = if (isPlaying) {
-                        ImageVector.vectorResource(id = R.drawable.baseline_pause_24)
-                    } else {
-                        ImageVector.vectorResource(id = R.drawable.baseline_play_arrow_24)
+                IconButton(
+                    onClick = {},
+                    shape = CircleShape,
+                    modifier = Modifier.size(60.dp)
+                ) {
+                    Box(
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = ImageVector.vectorResource(id = R.drawable.outline_replay_24),
+                            contentDescription = "Replay",
+                            tint = Color.White,
+                            modifier = Modifier.size(48.dp)
+                        )
+                        Text(
+                            text = "10",
+                            color = Color.White,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+                IconButton(
+                    onClick = {
+                        isPlayPauseClicked(!isPlaying)
                     },
-                    contentDescription = stringResource(R.string.play_or_pause),
-                    tint = Color.White,
-                    modifier = Modifier.size(48.dp)
-                )
+                    shape = CircleShape,
+                    modifier = Modifier.size(60.dp)
+                ) {
+                    Icon(
+                        imageVector = if (isPlaying) {
+                            ImageVector.vectorResource(id = R.drawable.baseline_pause_24)
+                        } else {
+                            ImageVector.vectorResource(id = R.drawable.baseline_play_arrow_24)
+                        },
+                        contentDescription = stringResource(R.string.play_or_pause),
+                        tint = Color.White,
+                        modifier = Modifier.size(48.dp)
+                    )
+                }
+                IconButton(
+                    onClick = {},
+                    shape = CircleShape,
+                    modifier = Modifier.size(60.dp)
+                ) {
+                    Box(
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            ImageVector.vectorResource(id = R.drawable.outline_forward_media_24),
+                            contentDescription = "Forward",
+                            tint = Color.White,
+                            modifier = Modifier.size(48.dp)
+                        )
+                        Text(
+                            text = "10",
+                            color = Color.White,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
             }
         }
         Row(
@@ -107,7 +158,7 @@ fun PlayerUi(
                             .background(Color.White, shape = CircleShape)
                     )
                 },
-                track = {sliderState ->
+                track = { sliderState ->
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -131,7 +182,7 @@ fun PlayerUi(
             )
 
             Text(
-                text = formatDuration(duration-currentPosition),
+                text = formatDuration(duration - currentPosition),
                 color = Color.White,
             )
         }
