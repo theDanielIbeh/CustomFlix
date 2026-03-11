@@ -150,7 +150,6 @@ fun MediaPickerScreen(
                                 }
                             }
                         },
-                        isSeeking = uiState.isSeeking,
                         onSeekBarPositionChange = {
                             viewModel.onIsSeekingChanged(true)
                             viewModel.onCurrentPositionChanged(it)

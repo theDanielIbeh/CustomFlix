@@ -25,7 +25,6 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -37,7 +36,6 @@ import java.util.Locale
 fun PlayerUi(
     isPlaying: Boolean,
     isPlayPauseClicked: (Boolean) -> Unit,
-    isSeeking: Boolean,
     onSeekBarPositionChange: (Long) -> Unit,
     onSeekBarPositionChangeFinished: (Long) -> Unit,
     currentPosition: Long,
@@ -159,7 +157,6 @@ private fun PlayerUiPreview() {
     PlayerUi(
         isPlaying = true,
         isPlayPauseClicked = {},
-        isSeeking = false,
         onSeekBarPositionChange = {},
         onSeekBarPositionChangeFinished = {},
         currentPosition = 0,
