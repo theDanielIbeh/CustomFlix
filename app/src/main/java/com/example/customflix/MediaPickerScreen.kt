@@ -150,6 +150,20 @@ fun MediaPickerScreen(
                                 }
                             }
                         },
+                        onReplayClicked = {
+                            player.seekTo(
+                                player.currentPosition.minus(10_000L)
+                                    .coerceAtLeast(0L)
+                            )
+                            viewModel.onCurrentPositionChanged(it)
+                        },
+                        onForwardClicked = {
+                            player.seekTo(
+                                player.currentPosition.plus(10_000L)
+                                    .coerceAtMost(player.duration)
+                            )
+                            viewModel.onCurrentPositionChanged(it)
+                        },
                         onSeekBarPositionChange = {
                             viewModel.onIsSeekingChanged(true)
                             viewModel.onCurrentPositionChanged(it)

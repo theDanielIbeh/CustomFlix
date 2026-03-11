@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -38,6 +39,8 @@ import java.util.Locale
 fun PlayerUi(
     isPlaying: Boolean,
     isPlayPauseClicked: (Boolean) -> Unit,
+    onReplayClicked: (Long) -> Unit,
+    onForwardClicked: (Long) -> Unit,
     onSeekBarPositionChange: (Long) -> Unit,
     onSeekBarPositionChangeFinished: (Long) -> Unit,
     currentPosition: Long,
@@ -58,7 +61,8 @@ fun PlayerUi(
         if (isBuffering) {
             CircularProgressIndicator(
                 strokeWidth = 2.dp,
-                modifier = Modifier.size(24.dp)
+                modifier = Modifier.size(24.dp),
+                color = Color.White
             )
         } else {
             Row(
@@ -66,7 +70,7 @@ fun PlayerUi(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 IconButton(
-                    onClick = {},
+                    onClick = { onReplayClicked(currentPosition) },
                     shape = CircleShape,
                     modifier = Modifier.size(60.dp)
                 ) {
@@ -83,7 +87,8 @@ fun PlayerUi(
                             text = "10",
                             color = Color.White,
                             fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(top = 4.dp)
                         )
                     }
                 }
@@ -106,7 +111,7 @@ fun PlayerUi(
                     )
                 }
                 IconButton(
-                    onClick = {},
+                    onClick = {onForwardClicked(currentPosition)},
                     shape = CircleShape,
                     modifier = Modifier.size(60.dp)
                 ) {
@@ -123,7 +128,8 @@ fun PlayerUi(
                             text = "10",
                             color = Color.White,
                             fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(top = 4.dp)
                         )
                     }
                 }
@@ -208,6 +214,8 @@ private fun PlayerUiPreview() {
     PlayerUi(
         isPlaying = true,
         isPlayPauseClicked = {},
+        onReplayClicked = {},
+        onForwardClicked = {},
         onSeekBarPositionChange = {},
         onSeekBarPositionChangeFinished = {},
         currentPosition = 0,
