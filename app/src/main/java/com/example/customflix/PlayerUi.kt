@@ -3,6 +3,7 @@ package com.example.customflix
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -39,6 +40,7 @@ import java.util.Locale
 fun PlayerUi(
     isPlaying: Boolean,
     isPlayPauseClicked: (Boolean) -> Unit,
+    isExpanded: Boolean,
     onReplayClicked: (Long) -> Unit,
     onForwardClicked: (Long) -> Unit,
     onSeekBarPositionChange: (Long) -> Unit,
@@ -111,7 +113,7 @@ fun PlayerUi(
                     )
                 }
                 IconButton(
-                    onClick = {onForwardClicked(currentPosition)},
+                    onClick = { onForwardClicked(currentPosition) },
                     shape = CircleShape,
                     modifier = Modifier.size(60.dp)
                 ) {
@@ -135,62 +137,109 @@ fun PlayerUi(
                 }
             }
         }
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .align(Alignment.BottomCenter),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 16.dp),
         ) {
-            Text(
-                text = formatDuration(currentPosition),
-                color = Color.White,
-            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = formatDuration(currentPosition),
+                    color = Color.White,
+                )
 
-            Slider(
-                value = currentPosition.toFloat().coerceIn(0f, duration.coerceAtLeast(1).toFloat()),
-                onValueChange = { newPosition ->
-                    onSeekBarPositionChange(newPosition.toLong())
-                },
-                onValueChangeFinished = {
-                    onSeekBarPositionChangeFinished(currentPosition)
-                },
-                valueRange = 0f..duration.coerceAtLeast(1).toFloat(),
-                thumb = {
-                    Box(
-                        modifier = Modifier
-                            .size(24.dp)
-                            .shadow(elevation = 4.dp, shape = CircleShape)
-                            .background(Color.White, shape = CircleShape)
-                    )
-                },
-                track = { sliderState ->
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(4.dp)
-                            .clip(RoundedCornerShape(2.dp))
-                            .background(MaterialTheme.colorScheme.surfaceVariant)
-                    ) {
+                Slider(
+                    value = currentPosition.toFloat()
+                        .coerceIn(0f, duration.coerceAtLeast(1).toFloat()),
+                    onValueChange = { newPosition ->
+                        onSeekBarPositionChange(newPosition.toLong())
+                    },
+                    onValueChangeFinished = {
+                        onSeekBarPositionChangeFinished(currentPosition)
+                    },
+                    valueRange = 0f..duration.coerceAtLeast(1).toFloat(),
+                    thumb = {
                         Box(
                             modifier = Modifier
-                                .fillMaxWidth(
-                                    if (duration > 0) {
-                                        (sliderState.value / duration.toFloat()).coerceIn(0f, 1f)
-                                    } else 0f
-                                )
-                                .height(4.dp)
-                                .background(MaterialTheme.colorScheme.primary)
+                                .size(24.dp)
+                                .shadow(elevation = 4.dp, shape = CircleShape)
+                                .background(Color.White, shape = CircleShape)
                         )
-                    }
-                },
-                modifier = Modifier.weight(1f)
-            )
+                    },
+                    track = { sliderState ->
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(4.dp)
+                                .clip(RoundedCornerShape(2.dp))
+                                .background(MaterialTheme.colorScheme.surfaceVariant)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth(
+                                        if (duration > 0) {
+                                            (sliderState.value / duration.toFloat()).coerceIn(
+                                                0f,
+                                                1f
+                                            )
+                                        } else 0f
+                                    )
+                                    .height(4.dp)
+                                    .background(MaterialTheme.colorScheme.primary)
+                            )
+                        }
+                    },
+                    modifier = Modifier.weight(1f)
+                )
 
-            Text(
-                text = formatDuration(duration - currentPosition),
-                color = Color.White,
-            )
+                Text(
+                    text = formatDuration(duration - currentPosition),
+                    color = Color.White,
+                )
+            }
+
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.End),
+                modifier = Modifier
+                    .fillMaxWidth()
+            ) {
+                IconButton(
+                    onClick = { onForwardClicked(currentPosition) },
+                    shape = CircleShape,
+                    modifier = Modifier.size(30.dp)
+                ) {
+                    Icon(
+                        imageVector = if (isExpanded) {
+                            ImageVector.vectorResource(id = R.drawable.outline_collapse_content_24)
+                        } else {
+                            ImageVector.vectorResource(id = R.drawable.outline_expand_content_24)
+                        },
+                        contentDescription = "Forward",
+                        tint = Color.White,
+                        modifier = Modifier.size(24.dp)
+                    )
+
+                }
+                IconButton(
+                    onClick = { onForwardClicked(currentPosition) },
+                    shape = CircleShape,
+                    modifier = Modifier.size(30.dp)
+                ) {
+
+                    Icon(
+                        imageVector = ImageVector.vectorResource(id = R.drawable.outline_settings_24),
+                        contentDescription = "Forward",
+                        tint = Color.White,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+            }
         }
     }
 }
@@ -214,6 +263,7 @@ private fun PlayerUiPreview() {
     PlayerUi(
         isPlaying = true,
         isPlayPauseClicked = {},
+        isExpanded = false,
         onReplayClicked = {},
         onForwardClicked = {},
         onSeekBarPositionChange = {},

@@ -11,7 +11,8 @@ data class MediaPickerUiState(
     val currentPosition: Long = 0L,
     val duration: Long = 0L,
     val isBuffering: Boolean = false,
-    val isPlayerUiVisible: Boolean = false
+    val isPlayerUiVisible: Boolean = false,
+    val isPlayerExpanded: Boolean = false
 )
 
 class MediaPickerViewModel : ViewModel() {

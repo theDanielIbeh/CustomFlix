@@ -150,6 +150,7 @@ fun MediaPickerScreen(
                                 }
                             }
                         },
+                        isExpanded = uiState.isPlayerExpanded,
                         onReplayClicked = {
                             player.seekTo(
                                 player.currentPosition.minus(10_000L)
