@@ -41,6 +41,7 @@ fun PlayerUi(
     isPlaying: Boolean,
     isPlayPauseClicked: (Boolean) -> Unit,
     isExpanded: Boolean,
+    onExpandCollapseClicked: () -> Unit,
     onReplayClicked: (Long) -> Unit,
     onForwardClicked: (Long) -> Unit,
     onSeekBarPositionChange: (Long) -> Unit,
@@ -210,7 +211,7 @@ fun PlayerUi(
                     .fillMaxWidth()
             ) {
                 IconButton(
-                    onClick = { onForwardClicked(currentPosition) },
+                    onClick = onExpandCollapseClicked,
                     shape = CircleShape,
                     modifier = Modifier.size(30.dp)
                 ) {
@@ -264,6 +265,7 @@ private fun PlayerUiPreview() {
         isPlaying = true,
         isPlayPauseClicked = {},
         isExpanded = false,
+        onExpandCollapseClicked = {},
         onReplayClicked = {},
         onForwardClicked = {},
         onSeekBarPositionChange = {},

@@ -1,6 +1,7 @@
 package com.example.customflix
 
 import android.content.Context
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -33,6 +34,8 @@ import kotlinx.coroutines.delay
 
 @Composable
 fun MediaPickerScreen(
+    onExpandedChanged: (Boolean) -> Unit,
+    onOrientationLandscape: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
     context: Context = LocalContext.current,
     viewModel: MediaPickerViewModel = viewModel()
@@ -54,6 +57,19 @@ fun MediaPickerScreen(
     }
 
     val uiState = viewModel.uiState
+
+    BackHandler(enabled = uiState.isPlayerExpanded) {
+        viewModel.onPlayerExpandedChanged(false)
+    }
+
+    LaunchedEffect(uiState.isPlayerExpanded) {
+        onExpandedChanged(uiState.isPlayerExpanded)
+        if (uiState.isPlayerExpanded) {
+            onOrientationLandscape((player.videoSize.width.toDouble() / player.videoSize.height.toDouble()) > 1)
+        } else {
+            onOrientationLandscape(false)
+        }
+    }
 
     LaunchedEffect(uiState.isPlayerUiVisible, uiState.isSeeking, uiState.isPlaying) {
         if (uiState.isPlayerUiVisible && !uiState.isSeeking && uiState.isPlaying) {
@@ -97,16 +113,22 @@ fun MediaPickerScreen(
     Column(
         modifier = modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically)
+        verticalArrangement =
+            if (uiState.isPlayerExpanded)
+                Arrangement.Center
+            else
+                Arrangement.spacedBy(16.dp, Alignment.CenterVertically)
     ) {
-        Button(onClick = {
-            videoPickerLauncher.launch(
-                PickVisualMediaRequest(
-                    mediaType = ActivityResultContracts.PickVisualMedia.VideoOnly
+        if (!uiState.isPlayerExpanded) {
+            Button(onClick = {
+                videoPickerLauncher.launch(
+                    PickVisualMediaRequest(
+                        mediaType = ActivityResultContracts.PickVisualMedia.VideoOnly
+                    )
                 )
-            )
-        }) {
-            Text(text = "Pick Video")
+            }) {
+                Text(text = "Pick Video")
+            }
         }
         Box(
             modifier = Modifier
@@ -151,6 +173,9 @@ fun MediaPickerScreen(
                             }
                         },
                         isExpanded = uiState.isPlayerExpanded,
+                        onExpandCollapseClicked = {
+                            viewModel.onPlayerExpandedChanged(!uiState.isPlayerExpanded)
+                        },
                         onReplayClicked = {
                             player.seekTo(
                                 player.currentPosition.minus(10_000L)
@@ -186,5 +211,8 @@ fun MediaPickerScreen(
 @Preview
 @Composable
 private fun MediaPickerScreenPreview() {
-    MediaPickerScreen()
+    MediaPickerScreen(
+        onExpandedChanged = {},
+        onOrientationLandscape = {}
+    )
 }

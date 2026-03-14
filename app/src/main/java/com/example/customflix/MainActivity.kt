@@ -1,16 +1,28 @@
 package com.example.customflix
 
+import android.content.pm.ActivityInfo
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import com.example.customflix.ui.theme.CustomFlixTheme
 
 class MainActivity : ComponentActivity() {
@@ -19,9 +31,39 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             CustomFlixTheme {
+                var isFullScreen by rememberSaveable { mutableStateOf(false) }
+                val windowInsetsController = WindowCompat.getInsetsController(window, window.decorView)
+
+                LaunchedEffect(isFullScreen) {
+                    if (isFullScreen) {
+                        windowInsetsController.apply {
+                            hide(WindowInsetsCompat.Type.systemBars())
+                            systemBarsBehavior =
+                                WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+                        }
+                    } else {
+                        windowInsetsController.apply {
+                            show(WindowInsetsCompat.Type.systemBars())
+                        }
+                    }
+                }
+
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     MediaPickerScreen(
-                        modifier = Modifier.fillMaxSize().padding(innerPadding)
+                        onExpandedChanged = { expanded ->
+                            isFullScreen = expanded
+                        },
+                        onOrientationLandscape = { landscape ->
+                            Log.d("MainActivity", "onOrientationLandscape: $landscape")
+                            requestedOrientation = if (landscape) {
+                                ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+                            } else {
+                                ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+                            }
+                        },
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(if (isFullScreen) PaddingValues(0.dp) else innerPadding)
                     )
                 }
             }

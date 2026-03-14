@@ -42,4 +42,8 @@ class MediaPickerViewModel : ViewModel() {
     fun onPlayerUiVisibilityChanged(isVisible: Boolean) {
         uiState = uiState.copy(isPlayerUiVisible = isVisible)
     }
+
+    fun onPlayerExpandedChanged(isExpanded: Boolean) {
+        uiState = uiState.copy(isPlayerExpanded = isExpanded)
+    }
 }
