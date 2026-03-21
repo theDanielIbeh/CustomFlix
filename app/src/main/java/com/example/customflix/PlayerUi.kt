@@ -49,6 +49,7 @@ fun PlayerUi(
     currentPosition: Long,
     duration: Long,
     isBuffering: Boolean,
+    onShowBottomSheet: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -228,7 +229,7 @@ fun PlayerUi(
 
                 }
                 IconButton(
-                    onClick = { onForwardClicked(currentPosition) },
+                    onClick = onShowBottomSheet,
                     shape = CircleShape,
                     modifier = Modifier.size(30.dp)
                 ) {
@@ -272,6 +273,7 @@ private fun PlayerUiPreview() {
         onSeekBarPositionChangeFinished = {},
         currentPosition = 0,
         duration = 0,
-        isBuffering = false
+        isBuffering = false,
+        onShowBottomSheet = {}
     )
 }
