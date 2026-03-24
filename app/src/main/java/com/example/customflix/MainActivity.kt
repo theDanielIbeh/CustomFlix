@@ -1,11 +1,15 @@
 package com.example.customflix
 
+import android.content.Context
+import android.content.ContextWrapper
 import android.content.pm.ActivityInfo
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -26,13 +30,15 @@ import androidx.core.view.WindowInsetsControllerCompat
 import com.example.customflix.ui.theme.CustomFlixTheme
 
 class MainActivity : ComponentActivity() {
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             CustomFlixTheme {
                 var isFullScreen by rememberSaveable { mutableStateOf(false) }
-                val windowInsetsController = WindowCompat.getInsetsController(window, window.decorView)
+                val windowInsetsController =
+                    WindowCompat.getInsetsController(window, window.decorView)
 
                 LaunchedEffect(isFullScreen) {
                     if (isFullScreen) {
@@ -85,4 +91,13 @@ fun GreetingPreview() {
     CustomFlixTheme {
         Greeting("Android")
     }
+}
+
+internal fun Context.findActivity(): ComponentActivity {
+    var context = this
+    while (context is ContextWrapper) {
+        if (context is ComponentActivity) return context
+        context = context.baseContext
+    }
+    throw IllegalStateException("Picture in picture should be called in the context of an Activity")
 }

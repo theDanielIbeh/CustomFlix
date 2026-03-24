@@ -1,10 +1,16 @@
 package com.example.customflix
 
+import android.app.PictureInPictureParams
 import android.content.Context
+import android.os.Build
+import android.util.Log
+import android.util.Rational
+import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -30,6 +36,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -42,19 +49,25 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toAndroidRectF
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.graphics.toRect
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
+import androidx.media3.common.VideoSize
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.compose.ContentFrame
 import kotlinx.coroutines.delay
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MediaPickerScreen(
@@ -68,6 +81,7 @@ fun MediaPickerScreen(
         skipPartiallyExpanded = false
     )
     var showBottomSheet by rememberSaveable { mutableStateOf(false) }
+    var shouldEnterPipMode by rememberSaveable { mutableStateOf(false) }
 
     var selectedIndex by rememberSaveable { mutableIntStateOf(0) }
     val options = listOf(1F, 1.25F, 1.5F, 2F)
@@ -124,6 +138,7 @@ fun MediaPickerScreen(
             override fun onIsPlayingChanged(playing: Boolean) {
                 super.onIsPlayingChanged(playing)
                 viewModel.onIsPlayingChanged(playing)
+                shouldEnterPipMode = playing
             }
 
             override fun onPlaybackStateChanged(playbackState: Int) {
@@ -137,9 +152,52 @@ fun MediaPickerScreen(
 
         player.addListener(listener)
         onRetire {
+            shouldEnterPipMode = false
             player.removeListener(listener)
             player.release()
         }
+    }
+
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+        val context = LocalContext.current
+        DisposableEffect(context) {
+            val onUserLeaveBehavior = Runnable {
+                if (uiState.isPlayerExpanded) { context.findActivity()
+                    .enterPictureInPictureMode(PictureInPictureParams.Builder().build())}
+                else {
+                    player.pause()
+                }
+            }
+            context.findActivity().addOnUserLeaveHintListener(
+                onUserLeaveBehavior
+            )
+            onDispose {
+                context.findActivity().removeOnUserLeaveHintListener(
+                    onUserLeaveBehavior
+                )
+            }
+        }
+    } else {
+        Log.i("PiP info", "API does not support PiP")
+    }
+
+    val context = LocalContext.current
+
+    val pipModifier = modifier.onGloballyPositioned { layoutCoordinates ->
+        val builder = PictureInPictureParams.Builder()
+        if (shouldEnterPipMode && player != null && player.videoSize != VideoSize
+            .UNKNOWN) {
+            val sourceRect = layoutCoordinates.boundsInWindow().toAndroidRectF().toRect()
+            builder.setSourceRectHint(sourceRect)
+            builder.setAspectRatio(
+                Rational(player.videoSize.width, player.videoSize.height)
+            )
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            builder.setAutoEnterEnabled(shouldEnterPipMode && uiState.isPlayerExpanded)
+        }
+        context.findActivity().setPictureInPictureParams(builder.build())
     }
 
     Column(
@@ -169,7 +227,7 @@ fun MediaPickerScreen(
         ) {
             ContentFrame(
                 player = player,
-                modifier = Modifier
+                modifier = pipModifier
                     .fillMaxWidth()
                     .clickable(
                         interactionSource = null,
@@ -321,6 +379,7 @@ fun MediaPickerScreen(
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Preview
 @Composable
 private fun MediaPickerScreenPreview() {
